@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: WooCommerce
+ * Plugin Name: MyOngkir
  * Plugin URI: http://eezhal92.com/myongkir/
  * Description: WooCommerce add-on for indonesian local shipping.
  * Version: 1.0.0
