@@ -15,5 +15,8 @@
   <li>Now, your products can be shipped by various indonesian couriers!</li>
 </ol>
 
+<h3>Lisence</h3>
+<p>MIT License. Copyright 2014 eezhal<p>
+
 <h3>Contact me if you found some bugs or want to collaborate with me! Thanks.</h3>
 <h4>eezhal92</h4>
