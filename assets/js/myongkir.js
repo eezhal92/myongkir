@@ -13,8 +13,8 @@ jQuery(document).ready(function( $ ) {
 	// alert('welcome to myongkir.js');
 
 	// initialization
-	$('#billing_city').prop('disabled', true).chosen();
-	$('#shipping_city').prop('disabled', true).chosen();	
+	$('#billing_city').prop('disabled', true).select2();
+	$('#shipping_city').prop('disabled', true).select2();	
 
 	var user_billing_city = myongkirAjax.billing_city;
 	var user_shipping_city = myongkirAjax.shipping_city;
@@ -40,8 +40,8 @@ jQuery(document).ready(function( $ ) {
 	$('#billing_state').live('change', function() {
 		var b_state_id = $(this).find('option:selected').val();									
 
-		$('#billing_city div.chosen-drop ul.chosen-results').empty();												
-		$('#billing_city_chosen').addClass('chosen-disabled');
+		// $('#billing_city div.chosen-drop ul.chosen-results').empty();												
+		$('#billing_city').select2("enable", false);
 
 		if( b_state_id ) {
 			$('#billing_city').empty();
@@ -52,8 +52,8 @@ jQuery(document).ready(function( $ ) {
 	$('#shipping_state').live('change', function() {
 		var s_state_id = $(this).find('option:selected').val();									
 
-		$('#shipping_city div.chosen-drop ul.chosen-results').empty();												
-		$('#shipping_city_chosen').addClass('chosen-disabled');
+		// $('#shipping_city div.chosen-drop ul.chosen-results').empty();												
+		$('#shipping_city').select2("enable", false);
 
 		if( s_state_id ) {
 			$('#shipping_city').empty();
@@ -64,6 +64,7 @@ jQuery(document).ready(function( $ ) {
 
 	// request function
 	function getCities( city_element, user_state_id, user_city_id) {			
+		
 		curRequest[city_element] = $.ajax({
 	      	url: myongkirAjax.ajax_url,
 	      	type: 'get',
@@ -85,8 +86,7 @@ jQuery(document).ready(function( $ ) {
 					$("<option/>",{ value:city_id, text:city_name }).appendTo(city_element);
 				});
 					
-		      	$(city_element).prop('disabled', false).val(user_city_id).trigger('change').trigger("chosen:updated");
-		      	// $(city_element).trigger('change');
+		      	$(city_element).select2("enable", true).val(user_city_id);
 	      	}
 	    });
 	}
