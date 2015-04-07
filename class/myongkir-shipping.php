@@ -14,7 +14,7 @@ require_once 'request.php';
 require_once 'helper-functions.php';
 
 class MyOngkir_Shipping {
-	const SERVER = 'http://rajaongkir.com/api';	
+	const SERVER = 'http://rajaongkir.com/api/starter';	
 	private $api_key = '';
 	private static $request = null;	
 	protected static $instance;
