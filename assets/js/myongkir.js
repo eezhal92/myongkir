@@ -1,5 +1,5 @@
 /*!
- * myongkir.js v1.0.0
+ * myongkir.js v1.0.1
  * Copyright 2014, eezhal92
  *
  * Freely distributable under the MIT license.
