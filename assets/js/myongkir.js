@@ -40,7 +40,7 @@ jQuery(document).ready(function( $ ) {
 	$('#billing_state').live('change', function() {
 		var b_state_id = $(this).find('option:selected').val();									
 
-		// $('#billing_city div.chosen-drop ul.chosen-results').empty();												
+		$('s2id_billing_state').empty();												
 		$('#billing_city').select2("enable", false);
 
 		if( b_state_id ) {
@@ -52,7 +52,7 @@ jQuery(document).ready(function( $ ) {
 	$('#shipping_state').live('change', function() {
 		var s_state_id = $(this).find('option:selected').val();									
 
-		// $('#shipping_city div.chosen-drop ul.chosen-results').empty();												
+		$('s2id_shipping_city').empty();												
 		$('#shipping_city').select2("enable", false);
 
 		if( s_state_id ) {
