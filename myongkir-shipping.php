@@ -107,11 +107,16 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 	 */
 	public function calculate_shipping( $package ) {					
 		global $woocommerce;
+		global $myongkir;
+		
 		$current_shipping_city = $woocommerce->customer->get_shipping_city();
 		$current_cart_weight = $woocommerce->cart->cart_contents_weight;
 
 		// var_dump($current_shipping_city);
-
+		
+		$current_currency = get_woocommerce_currency();
+		// $myongkir->get_currency( $current_currency );
+		
 		$couriers = $this->get_available_shippings( $current_shipping_city, $current_cart_weight );										
 		if( $couriers ) {
 			foreach( $couriers as $courier ) {						
