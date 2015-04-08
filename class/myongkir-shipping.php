@@ -43,23 +43,6 @@ class MyOngkir_Shipping {
 	public function set_api_key($api_key) {
 		$this->api_key = $api_key;
 	}
-	
-	// get currency from indonesian rupiah to desired currency
-	public function get_currency($target_currency, $amount = 1) {
-		$req = new Request(array(
-	 			// 'server' => 'http://www.freecurrencyconverterapi.com/api/v3/'
-				'server' => 'http://www.getexchangerates.com/api/convert/'
-	 	));
-		
-		$uri = $amount .'/IDR/'. $target_currency;
-		
-		$result = $req->get($uri, array());
-		
-		// $result = object_to_array( $result );
-		var_dump($result->response);
-		die();
-		
-	}
 
 	/**
 	* get_cities function.
