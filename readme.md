@@ -4,6 +4,13 @@
 <p>Hello! This is beta release.</p>
 <p>This is additional shipping methods for indonesian wordpress based e-commerce. This plugin using <a href="htpp://rajaongkir.com">rajaongkir.com</a> API.</p>
 
+<h3>Change Log</h3>
+<b>08-04-2014</b>
+<ul>
+  <li>Implement select2.js</li>
+  <li>fix handling Rajaongkir API result</li>
+</ul>
+
 <h3>How to install</h3>
 <ol>
   <li>Install woocommerce plugin on your wordpress site.</li>
@@ -18,5 +25,5 @@
 <h3>Lisence</h3>
 <p>MIT License. Copyright 2014 eezhal<p>
 
-<h3>Contact me if you found some bugs or want to collaborate with me! Thanks.</h3>
-<h4>eezhal92</h4>
+<p>Contact me if you found some bugs or want to collaborate with me! Thanks.</p>
+<b>eezhal92</b>
