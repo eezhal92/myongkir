@@ -5,7 +5,7 @@
 <p>This is additional shipping methods for indonesian wordpress based e-commerce. This plugin using <a href="htpp://rajaongkir.com">rajaongkir.com</a> API.</p>
 
 <h3>Change Log</h3>
-<b>08-04-2014</b>
+<b>08-04-2015</b>
 <ul>
   <li>Implement select2.js</li>
   <li>fix handling Rajaongkir API result</li>
