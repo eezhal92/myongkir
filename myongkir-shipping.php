@@ -124,7 +124,7 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 							array(
 								'id' => $this->id . "_" . $courier['name'] . "_" . $item['service'] ,
 								'label' => $courier['name'] . " " . $item['service'],
-								'cost' =>  $cost['value'],
+								'cost' => $cost['value'],
 								'calc_tax' => 'per_item'
 							)
 						);

@@ -22,6 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
 
 	register_activation_hook( __FILE__, 'check_base_country' );	
+	register_activation_hook( __FILE__, 'check_currency' );	
 	
 	add_action( 'init', 'global_myongkir_init' ); //  try to change scope to more global
 	add_action( 'woocommerce_shipping_init', 'myongkir_shipping_method_init' );
@@ -45,6 +46,15 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
     		$exit_msg = 'Plugin MyOngkir Shipping only based location must be Indonesia.';
     		exit($exit_msg);
 		}	
+	}
+	
+	function check_currency() {
+		$current_currency = get_woocommerce_currency();
+		
+		if( $current_currency != 'IDR' ) {
+			$exit_msg = 'Plugin MyOngkir Shipping must use IDR currency.';
+			exit($exit_msg);
+		}
 	}
 
 	function global_myongkir_init() {
