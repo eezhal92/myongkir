@@ -75,6 +75,34 @@ class MyOngkir_Shipping {
 			return false;
 		}	
 	}
+	
+	/**
+	* convert_currency function. convert from 
+	*
+	* @access public
+	* @param string $woocommerce_currency, integer $amount
+	* @return integer
+	*/
+	
+	public function convert_currency($woocommerce_currency, $amount = 1) {
+		if(is_null($woocommerce_currency) || $woocommerce_currency == '') {
+			try {
+				$req = new Request(array(
+					'server' => 'http://www.getexchangerates.com/api/convert/'
+				));
+				
+				$uri = $amount . '/idr/'. strtolower( $woocommerce_currency ) ;
+				
+				$res = $req->get($uri, array());
+				
+				return $res->response;
+			} catch (Exception $e) {
+				return $amount;
+			}
+		}
+		
+		return false;
+	}
 
 	/**
 	* get_cities function.

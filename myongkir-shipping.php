@@ -113,9 +113,7 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 		$current_cart_weight = $woocommerce->cart->cart_contents_weight;
 
 		// var_dump($current_shipping_city);
-		
 		$current_currency = get_woocommerce_currency();
-		// $myongkir->get_currency( $current_currency );
 		
 		$couriers = $this->get_available_shippings( $current_shipping_city, $current_cart_weight );										
 		if( $couriers ) {
@@ -126,7 +124,7 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 							array(
 								'id' => $this->id . "_" . $courier['name'] . "_" . $item['service'] ,
 								'label' => $courier['name'] . " " . $item['service'],
-								'cost' => $cost['value'],
+								'cost' => $myongkir->convert_currency( $current_currency, $cost['value'] ),
 								'calc_tax' => 'per_item'
 							)
 						);
