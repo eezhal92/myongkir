@@ -9,7 +9,7 @@
   <li>fix handling Rajaongkir API result</li>
 </ul>
 
-<h2>How to Install</h3>
+<h2>How to Install</h2>
 <ol>
   <li>Install WooCommerce plugin on your Wordpress site.</li>
   <li>Install this add-on plugin.</li>
