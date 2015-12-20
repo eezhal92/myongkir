@@ -146,6 +146,7 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 	private function get_available_shippings( $shipping_city, $cart_weight ) {
 		if( $origin_city = $this->settings['base_city'] ) {
 			global $myongkir;
+			$courier = $this->settings['courier'];
 			return $myongkir->get_costs( $origin_city, $shipping_city, $cart_weight, $courier );
 		}
 		echo $this->settings['base_city'];
