@@ -5,29 +5,29 @@
  * @package myongkir/class
  */
 
- 
-if ( ! defined( 'ABSPATH' ) ) { 
-    exit; 
+
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
 }
 
 require_once 'request.php';
 require_once 'helper-functions.php';
 
 class MyOngkir_Shipping {
-	const SERVER = 'http://rajaongkir.com/api/starter';	
+	const SERVER = 'http://api.rajaongkir.com/starter';
 	private $api_key = '';
-	private static $request = null;	
+	private static $request = null;
 	protected static $instance;
 
-	public function __construct() {		
+	public function __construct() {
 		// $this->api_key = $api_key;
-		
-		if( self::$request === null ) {					
+
+		if( self::$request === null ) {
 			self::$request = new Request(array(
 	 			'server' => self::SERVER
 	 		));
 		}
-				
+
 		return self::$request;
 	}
 
@@ -38,7 +38,7 @@ class MyOngkir_Shipping {
 
 		return static::$instance;
 	}
-	
+
 
 	public function set_api_key($api_key) {
 		$this->api_key = $api_key;
@@ -53,15 +53,16 @@ class MyOngkir_Shipping {
 	* @param float $weight
 	* @return array
 	*/
-	public function get_costs( $from, $to, $weight ) {
+	public function get_costs( $from, $to, $weight, $courier ) {
 		$result = self::$request->post('/cost', array(
 			'key' => $this->api_key,
-			'origin' => $from, 
-			'destination' => $to, // on going 
+			'origin' => $from,
+			'destination' => $to, // on going
 			'weight' => $weight * 1000,
+      'courier' => $courier
 		));
 
-		try {			
+		try {
 			$costs = object_to_array( $result->rajaongkir->results );
 
 			// echo "<pre>";
@@ -73,34 +74,34 @@ class MyOngkir_Shipping {
 		} catch ( Exception $e ) {
 			var_dump( 'ERROR Catched! Message: ' . $e->getMessage() );
 			return false;
-		}	
+		}
 	}
-	
+
 	/**
-	* convert_currency function. convert from 
+	* convert_currency function. convert from
 	*
 	* @access public
 	* @param string $woocommerce_currency, integer $amount
 	* @return integer
 	*/
-	
+
 	public function convert_currency($woocommerce_currency, $amount = 1) {
 		if(is_null($woocommerce_currency) || $woocommerce_currency == '') {
 			try {
 				$req = new Request(array(
 					'server' => 'http://www.getexchangerates.com/api/convert/'
 				));
-				
+
 				$uri = $amount . '/idr/'. strtolower( $woocommerce_currency ) ;
-				
+
 				$res = $req->get($uri, array());
-				
+
 				return $res->response;
 			} catch (Exception $e) {
 				return $amount;
 			}
 		}
-		
+
 		return false;
 	}
 
@@ -118,10 +119,10 @@ class MyOngkir_Shipping {
 			'province' => $this->convert_to_province_id( $woocommerce_default_country )
 		));
 
-		try {			
+		try {
 			$cities = object_to_array( $result->rajaongkir->results );
 
-			
+
 			$simple_cities = array();
 
 			foreach ($cities as $city) {
@@ -145,13 +146,13 @@ class MyOngkir_Shipping {
 			'id' => $rajaongkir_city_id
 		));
 
-		try {			
-			$city = object_to_array( $result->rajaongkir->results ); 
-		
+		try {
+			$city = object_to_array( $result->rajaongkir->results );
+
 			$city = $city['city_name'];
 
 			return $city;
-			
+
 		} catch ( Exception $e ) {
 			var_dump( 'ERROR Catched! Message: ' . $e->getMessage() );
 			return false;
@@ -168,10 +169,10 @@ class MyOngkir_Shipping {
 	public function get_provinces() {
 		// NOTE: check if province id have prefix ID:xx for the first install
 		$result = self::$request->get('/province', array(
-			'key' => $this->api_key,			
+			'key' => $this->api_key,
 		));
 
-		try {			
+		try {
 			$provinces = object_to_array( $result->rajaongkir->results );
 
 			$simple_provice = array();
@@ -188,14 +189,14 @@ class MyOngkir_Shipping {
 			var_dump( 'ERROR Catched! Message: ' . $e->getMessage() );
 			return false;
 		}
-	}	
+	}
 
 	/**
 	 * Convert woocommerce base_state to rajaongkir province_id
 	 *
 	 * @access public
 	 * @param  string $woocommerce_default_country
-	 * @return integer 
+	 * @return integer
 	 */
 	public function convert_to_province_id( $woocommerce_base_state ) {
 		$provinces = array(
@@ -234,10 +235,10 @@ class MyOngkir_Shipping {
 			'PA' => 24,
 			'PB' => 25
 		);
-		
+
 		if( array_key_exists( $woocommerce_base_state, $provinces ) ) {
 			return $provinces[$woocommerce_base_state];
-		}		
-	} 
+		}
+	}
 
 }
