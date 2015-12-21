@@ -3,17 +3,20 @@
  * Plugin Name: MyOngkir
  * Plugin URI: http://eezhal92.com/myongkir/
  * Description: WooCommerce add-on for indonesian local shipping.
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: eezhal
  * Author URI: http://eezhal92.com
+ * Contributor: xhijack
+ * Contributor URL: ramdani.sopwer.net
  * Requires at least: 3.8
  * @package myongkir
  * @category Core
  * @author eezhal
+ * Last Updated: 20 December 2015
  */
-// Exit if accessed directly 
-if ( ! defined( 'ABSPATH' ) ) { 
-    exit; 
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
 }
 
 /**
@@ -21,14 +24,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
 
-	register_activation_hook( __FILE__, 'check_base_country' );	
-	register_activation_hook( __FILE__, 'check_currency' );	
-	
+	register_activation_hook( __FILE__, 'check_base_country' );
+	register_activation_hook( __FILE__, 'check_currency' );
+
 	add_action( 'init', 'global_myongkir_init' ); //  try to change scope to more global
 	add_action( 'woocommerce_shipping_init', 'myongkir_shipping_method_init' );
 	add_filter( 'woocommerce_shipping_methods', 'add_myongkir_shipping_method' );
-	add_filter( 'woocommerce_general_settings', 'add_api_key_setting' );	
-	
+	add_filter( 'woocommerce_general_settings', 'add_api_key_setting' );
+
 	add_filter( 'woocommerce_checkout_fields', 'woocommerce_myongkir_checkout_fields' );
 	add_filter( 'woocommerce_billing_fields', 'custom_woocommerce_billing_fields' );
 	add_filter( 'woocommerce_shipping_fields', 'custom_woocommerce_shipping_fields' );
@@ -38,19 +41,19 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 	add_action( 'wp_footer', 'get_cities_js' );
 	add_action( 'wp_ajax_get_cities', 'get_cities_cb' );
 	add_action( 'wp_ajax_nopriv_get_cities', 'get_cities_cb' );
-	
+
 	function check_base_country() {
-		global $woocommerce;	
+		global $woocommerce;
 
 		if ( $woocommerce->countries->get_base_country() !== 'ID' ) {
     		$exit_msg = 'Plugin MyOngkir Shipping only based location must be Indonesia.';
     		exit($exit_msg);
-		}	
+		}
 	}
-	
+
 	function check_currency() {
 		$current_currency = get_woocommerce_currency();
-		
+
 		if( $current_currency != 'IDR' ) {
 			$exit_msg = 'Plugin MyOngkir Shipping must use IDR currency.';
 			exit($exit_msg);
@@ -67,17 +70,17 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 
 		$rajaongkir_api_key = get_option('woocommerce_rajaongkir_api_key');
 		$myongkir_shipping->set_api_key( $rajaongkir_api_key );
-		
+
 		$GLOBALS['myongkir'] = $myongkir_shipping;
 	}
 
 	function myongkir_shipping_method_init() {
 		if ( ! class_exists( 'MyOngkir_Shipping_Method' ) ) {
 			require "myongkir-shipping.php";
-		}		
+		}
 	}
- 
-	function add_myongkir_shipping_method( $methods ) {		
+
+	function add_myongkir_shipping_method( $methods ) {
 		$methods[] = 'MyOngkir_Shipping_Method';
 		return $methods;
 	}
@@ -103,16 +106,16 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 	  }
 
 	  return $updated_settings;
-	}			
+	}
 
 	// reorder form field
 	function woocommerce_myongkir_checkout_fields( $fields ) {
 		$allowed_fields = array('billing', 'shipping');
-			
+
 		// delete billing and shipping city fields
 		unset($fields['billing']['billing_city']);
 		unset($fields['shipping']['shipping_city']);
-		
+
 		foreach( $fields as $type => $field )
 		{
 			if( in_array($type, $allowed_fields) )
@@ -121,85 +124,85 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 				$fields[$type][$type.'_address_1']['class'] = array('form-row-wide');
 				$fields[$type][$type.'_address_2']['class'] = array('form-row-wide');
 				unset($fields[$type][$type.'_address_2']['label_class']);
-							
+
 				// modify postcode field css class
 				$postcode_field  = $fields[$type][$type.'_postcode'];
 				$postcode_field['class'] = array('form-row-last');
 				$postcode_field['clear'] = true;
-					  
+
 				// offset value of state field
 				$offset_state = array_search($type.'_state', array_keys($fields[$type]));
-				$offset_after_state  = $offset_state + 1;				
-				
-				$fields[$type] = 
-					// country, first name | last name, company, address1, address2, state(provinsi) |
-					array_slice($fields[$type], 0, $offset_after_state, true) + 
-					// postcode / zip, city
-					array($type.'_postcode' => $postcode_field) + array($type.'_city' => create_city_field($type) ) + 
-					// email | phone
-					array_slice($fields[$type], $offset_after_state, null, true); 
-			}		
-		}	
-		
-		return $fields;
-	}	
+				$offset_after_state  = $offset_state + 1;
 
-	
-	function custom_woocommerce_billing_fields( $fields ) {	
+				$fields[$type] =
+					// country, first name | last name, company, address1, address2, state(provinsi) |
+					array_slice($fields[$type], 0, $offset_after_state, true) +
+					// postcode / zip, city
+					array($type.'_postcode' => $postcode_field) + array($type.'_city' => create_city_field($type) ) +
+					// email | phone
+					array_slice($fields[$type], $offset_after_state, null, true);
+			}
+		}
+
+		return $fields;
+	}
+
+
+	function custom_woocommerce_billing_fields( $fields ) {
 		$fields['billing_city']	= create_city_field('billing');
 		return $fields;
-	}	
-	
+	}
+
 	function custom_woocommerce_shipping_fields( $fields ) {
 		$fields['shipping_city'] = create_city_field('shipping');
 		return $fields;
 	}
-	
+
 	function woocommerce_myongkir_checkout_field_update_order_meta( $order_id ) {
 		global $myongkir;
-						
+
 		if ( $_POST['billing_city'] ) {
 			$province_id = $myongkir->convert_to_province_id( $_POST['billing_state'] );
 			$city_name = $myongkir->get_city( $_POST['billing_city'], $province_id );
 			update_post_meta( $order_id, '_billing_city', esc_attr( $city_name )); // works
 		}
-		
+
 		if ( isset($_POST['shipping_city']) ) { // works
 			// check if ship to different address is checked
-			if( !empty($_POST['shipping_city']) && $_POST['ship_to_different_address'] == 1 ){  			
+			if( !empty($_POST['shipping_city']) && $_POST['ship_to_different_address'] == 1 ){
 				$province_id = $myongkir->convert_to_province_id( $_POST['shipping_state'] );
-				$city_name = $myongkir->get_city( $_POST['shipping_city'], $province_id );								
+				$city_name = $myongkir->get_city( $_POST['shipping_city'], $province_id );
 			} else {
 				$province_id = $myongkir->convert_to_province_id( $_POST['billing_state'] );
-				$city_name = $myongkir->get_city( $_POST['billing_city'], $province_id );				
+				$city_name = $myongkir->get_city( $_POST['billing_city'], $province_id );
 			}
 			update_post_meta( $order_id, '_shipping_city', esc_attr($city_name));
-		} 
+		}
 
-		if ( !isset($_POST['shipping_city']) ) {			
+		if ( !isset($_POST['shipping_city']) ) {
 			$province_id = $myongkir->convert_to_province_id( $_POST['billing_state'] );
 			$city_name = $myongkir->get_city( $_POST['billing_city'], $province_id );
 
 			update_post_meta( $order_id, '_shipping_city', esc_attr( $city_name ));
 		}
-		
+
 	}
 
 	function create_city_field( $type ) {
 		global $current_user;
-				
+
 		$field = array(
 			'type' 			=> 'select',
 			'label' 		=> 'City',
 			'placeholder' 	=> 'City',
-			'required' 		=> true,				
+			'required' 		=> true,
 			'class' 		=> array('form-row-wide', 'update_totals_on_change'),
 			'clear' 		=> false,
 			'options'		=> array(
 				'' => __( 'Select an option', 'woocommerce' )
 			)
 		);
-		
+
 		if( is_user_logged_in() )
 		{
 			$user_id = $current_user->data->ID;
@@ -207,14 +210,14 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 			$index_city =  get_user_meta($user_id, $meta_key, true);
 			array_push($field['class'], $meta_key . '_' . $index_city);
 		}
-		
+
 		return $field;
 	}
 
 	function woocommerce_myongkir_my_account_my_address_formatted_address( $data, $customer_id ) {
 		global $myongkir;
-		
-		// echo 'fooom';  
+
+		// echo 'fooom';
 		$province_id = $myongkir->convert_to_province_id( $data['state'] );
 
 		$data['city'] = $myongkir->get_city($data['city'], $province_id);
@@ -224,36 +227,36 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 	function get_cities_js( $hook ) {
 		global $post;
 
-		if ( $post->post_content == '[woocommerce_my_account]' || $post->post_content == '[woocommerce_checkout]' ) { 
+		if ( $post->post_content == '[woocommerce_my_account]' || $post->post_content == '[woocommerce_checkout]' ) {
 			if( is_user_logged_in() ) {
 				global $current_user;
 
-				$user_id = $current_user->data->ID;			
+				$user_id = $current_user->data->ID;
 				$_SESSION['billing_city'] = get_user_meta($user_id, 'billing_city', true);
 				$_SESSION['shipping_city'] = get_user_meta($user_id, 'shipping_city', true);
 			}
 
-			$is_permitted_pages = 
-				( $post->post_content == '[woocommerce_my_account]' || $post->post_content == '[woocommerce_checkout]' );			
+			$is_permitted_pages =
+				( $post->post_content == '[woocommerce_my_account]' || $post->post_content == '[woocommerce_checkout]' );
 
-			$settings = array( 
-				'ajax_url'  		 => admin_url( 'admin-ajax.php' ), 			
+			$settings = array(
+				'ajax_url'  		 => admin_url( 'admin-ajax.php' ),
 				'nonce' 			 => wp_create_nonce( constant('MYONGKIR_NONCE') ),
 				'is_permitted_pages' => $is_permitted_pages,
 				'billing_city' 		 => isset( $_SESSION['billing_city'] ) ? $_SESSION['billing_city'] : null,
 				'shipping_city' 	 => isset( $_SESSION['shipping_city'] ) ? $_SESSION['shipping_city'] : null
 			);
 
-			wp_enqueue_script( 'ajax-script', plugins_url( 'assets/js/myongkir.js', __FILE__ ), array('jquery') );		
+			wp_enqueue_script( 'ajax-script', plugins_url( 'assets/js/myongkir.js', __FILE__ ), array('jquery') );
 			wp_localize_script( 'ajax-script', 'myongkirAjax', $settings );
 
-	    }    
+	    }
 
 	}
 
 	function get_cities_cb() {
 		$nonce = $_GET['nonce'];
-		
+
 		// if don't have nonce, set error
 		if ( !wp_verify_nonce($nonce, constant('MYONGKIR_NONCE')) ) die($nonce);
 
@@ -264,13 +267,13 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 		} else {
 			$state_id = $_GET['state'];
 			global $myongkir;
-			
-			$cities = $myongkir->get_cities( $state_id );							 			
+
+			$cities = $myongkir->get_cities( $state_id );
 
 		    echo json_encode( $cities );
-			die(); // this is required to return a proper result			
-		}		
-	}	
-		
+			die(); // this is required to return a proper result
+		}
+	}
+
 
 }
