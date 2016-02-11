@@ -81,6 +81,7 @@ class Request {
 
     public function post($uri, $params = array(), $format = NULL)
     {
+        // print_r($params);
         return $this->_call('post', $uri, $params, $format);
     }
 
@@ -170,6 +171,11 @@ class Request {
 		echo "<h3>Request</h3>\n";
 		echo $request['url']."<br/>\n";
 		echo "=============================================<br/>\n";
+        echo "<h3>Params</h3>\n";
+        echo "<pre>";
+        print_r($request['params']);
+        echo "</pre>";        
+        echo "=============================================<br/>\n";
 		echo "<h3>Response</h3>\n";
 
 		if($this->response_string)

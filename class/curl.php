@@ -340,7 +340,8 @@ class Curl {
 	public function debug_request()
 	{
 		return array(
-			'url' => $this->url
+			'url' => $this->url,
+            'params' => $this->options
 		);
 	}
 

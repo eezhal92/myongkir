@@ -26,6 +26,7 @@ class MyOngkir_Shipping {
 			self::$request = new Request(array(
 	 			'server' => self::SERVER
 	 		));
+	 		self::$request->api_key($api_key, 'key');
 		}
 
 		return self::$request;
@@ -59,15 +60,17 @@ class MyOngkir_Shipping {
 			'origin' => $from,
 			'destination' => $to, // on going
 			'weight' => $weight * 1000,
-      'courier' => $courier
+      		'courier' => 'jne'
 		));
+
+		self::$request->debug();
 
 		try {
 			$costs = object_to_array( $result->rajaongkir->results );
 
-			// echo "<pre>";
-			// print_r($result);
-			// echo "</pre>";
+			echo "<pre>abc";
+			print_r($result);
+			echo "</pre>";
 
 			$new_costs = object_to_array( $costs );
 			return $new_costs;
@@ -128,6 +131,8 @@ class MyOngkir_Shipping {
 			foreach ($cities as $city) {
 				$simple_cities[$city['city_id']] = $city['city_name'];
 			}
+
+			// echo '<pre>sc';
 			// print_r( $simple_cities );
 
 			return $simple_cities;
