@@ -119,13 +119,45 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 
 		$current_shipping_city = $woocommerce->customer->get_shipping_city();
 		$current_cart_weight = $woocommerce->cart->cart_contents_weight;
-
-		// var_dump($current_shipping_city);
+		
 		$current_currency = get_woocommerce_currency();
+		
+		$courier = $this->settings['courier'];
+		
+		$shipping_couriers = array(); // results
 
-		$couriers = $this->get_available_shippings( $current_shipping_city, $current_cart_weight );
-		if( $couriers ) {
-			foreach( $couriers as $courier ) {
+		switch ($courier) {
+			case 'jne':				
+			case 'tiki':				
+			case 'pos':
+				$shipping_couriers = $this->get_available_shippings(
+					$current_shipping_city, 
+					$current_cart_weight, 
+					$courier
+				);
+
+				break;
+			default:
+				$couriers = ['jne', 'tiki', 'pos'];				
+
+				foreach ($couriers as $courier) {
+					$result = $this->get_available_shippings(
+						$current_shipping_city, 
+						$current_cart_weight, $courier
+					);
+
+					$shipping_couriers[] = $result[0];
+				}
+
+				break;
+		}
+
+		// echo '<pre>';
+		// var_dump($shipping_couriers);
+		// echo '</pre>';
+		
+		if( $shipping_couriers ) {
+			foreach( $shipping_couriers as $courier ) {
 				foreach ( $courier['costs'] as $item ) {
 					foreach ( $item['cost'] as $cost ) {
 						$this->add_rate(
@@ -143,11 +175,16 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 
 	}
 
-	private function get_available_shippings( $shipping_city, $cart_weight ) {
+	private function get_available_shippings( $shipping_city, $cart_weight, $courier ) {
 		if( $origin_city = $this->settings['base_city'] ) {
 			global $myongkir;
-			$courier = $this->settings['courier'];
-			return $myongkir->get_costs( $origin_city, $shipping_city, $cart_weight, $courier );
+			
+			return $myongkir->get_costs(
+				$origin_city, 
+				$shipping_city,
+				$cart_weight, 
+				$courier 
+			);
 		}
 		echo $this->settings['base_city'];
 		// break shipping calculation if origin city not (base_city) set

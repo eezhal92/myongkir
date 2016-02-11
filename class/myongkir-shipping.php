@@ -54,23 +54,19 @@ class MyOngkir_Shipping {
 	* @param float $weight
 	* @return array
 	*/
-	public function get_costs( $from, $to, $weight, $courier ) {
+	public function get_costs( $from, $to, $weight, $courier = 'jne') {
 		$result = self::$request->post('/cost', array(
 			'key' => $this->api_key,
 			'origin' => $from,
 			'destination' => $to, // on going
 			'weight' => $weight * 1000,
-      		'courier' => 'jne'
+      		'courier' => $courier
 		));
 
-		self::$request->debug();
+		// self::$request->debug();
 
 		try {
 			$costs = object_to_array( $result->rajaongkir->results );
-
-			echo "<pre>abc";
-			print_r($result);
-			echo "</pre>";
 
 			$new_costs = object_to_array( $costs );
 			return $new_costs;

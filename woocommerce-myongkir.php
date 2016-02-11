@@ -144,6 +144,19 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 			}
 		}
 
+		$fields['billing']['selected_courier'] = array(
+			'type'       => 'select',
+			'label'      => __('Courier', 'woocommerce'),
+		    'placeholder'=> _x('Courier', 'placeholder', 'woocommerce'),
+		    'required'   => true,
+		    'class'      => array('form-row-wide'),
+		    'options'    => array(
+				'pos'  => 'POS',
+				'jne'  => 'JNE',
+				'tiki' => 'TIKI',
+			)
+		);
+
 		return $fields;
 	}
 
