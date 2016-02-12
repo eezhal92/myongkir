@@ -59,7 +59,7 @@ class MyOngkir_Shipping {
 			'key' => $this->api_key,
 			'origin' => $from,
 			'destination' => $to, // on going
-			'weight' => $weight * 1000,
+			'weight' => $weight,
       		'courier' => $courier
 		));
 

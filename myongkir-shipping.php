@@ -5,6 +5,8 @@
  * @author eezhal
  */
 
+require_once 'class/cart-weight.php';
+
 class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 	/**
 	 * Constructor for shipping class
@@ -37,11 +39,18 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 
 		$this->base_city = $this->settings['base_city'];
 
+		global $woocommerce;
 		global $myongkir;
 		// Save settings in admin if you have any defined
 		add_action( 'woocommerce_update_options_shipping_' . $this->id, array( $this, 'process_admin_options' ) );
 		// handle frontend cost request
 		add_action( 'wp_ajax_get_costs', 'calculate_shipping' );
+		add_action( 'woocommerce_review_order_after_shipping', function() {
+			echo '<tr class="order-total">
+				<th>Weight Total</th>
+				<td><strong><span class="amount">'.  WC()->cart->cart_contents_weight . ' ' . get_option('woocommerce_weight_unit') .'</span></strong></td>
+			  </tr>';		
+		});
 	}
 
 	function isset_rajaongkir_api() {
@@ -104,7 +113,7 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 				    	)
 		    );
 		}
-	}
+	}	
 
 	/**
 	 * calculate_shipping function.
@@ -117,14 +126,38 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 		global $woocommerce;
 		global $myongkir;
 
-		$current_shipping_city = $woocommerce->customer->get_shipping_city();
+		$current_shipping_city = $woocommerce->customer->get_shipping_city();		
 		$current_cart_weight = $woocommerce->cart->cart_contents_weight;
-		
-		$current_currency = get_woocommerce_currency();
-		
+
+		$minimum_weight = get_option('woocommerce_myongkir_minimum_weight');
+
+		// not setted yet,woocommerce_myongkir_minimum_weight
+		if (! $minimum_weight) {
+			$minimum_weight = 1;
+		}
+
+		if ($current_cart_weight < $minimum_weight) {
+			$current_cart_weight = $minimum_weight;
+		}
+
+		$weight_unit = get_option('woocommerce_weight_unit');			
+		// convert to gram
+		$current_cart_weight = CartWeight::toGram($current_cart_weight, $weight_unit);
+
+		// $current_currency = get_woocommerce_currency();
+
 		$courier = $this->settings['courier'];
+
+		// echo '<pre>';
+		// var_dump(array(
+		// 	'minimum_weight'      => $minimum_weight,
+		// 	'current_cart_weight' => $current_cart_weight,
+		// 	'weight_unit'         => $weight_unit,
+		// 	'shipping_city'       => $current_shipping_city,
+		// ));
+		// echo '</pre>';
 		
-		$shipping_couriers = array(); // results
+		$shipping_couriers = array(); // results		
 
 		switch ($courier) {
 			case 'jne':				
@@ -150,11 +183,7 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 				}
 
 				break;
-		}
-
-		// echo '<pre>';
-		// var_dump($shipping_couriers);
-		// echo '</pre>';
+		}		
 		
 		if( $shipping_couriers ) {
 			foreach( $shipping_couriers as $courier ) {
@@ -177,8 +206,8 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 
 	private function get_available_shippings( $shipping_city, $cart_weight, $courier ) {
 		if( $origin_city = $this->settings['base_city'] ) {
-			global $myongkir;
-			
+			global $myongkir;				
+
 			return $myongkir->get_costs(
 				$origin_city, 
 				$shipping_city,

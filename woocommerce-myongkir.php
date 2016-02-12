@@ -31,6 +31,7 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 	add_action( 'woocommerce_shipping_init', 'myongkir_shipping_method_init' );
 	add_filter( 'woocommerce_shipping_methods', 'add_myongkir_shipping_method' );
 	add_filter( 'woocommerce_general_settings', 'add_api_key_setting' );
+	add_filter( 'woocommerce_products_general_settings', 'add_api_minimum_weight' );
 
 	add_filter( 'woocommerce_checkout_fields', 'woocommerce_myongkir_checkout_fields' );
 	add_filter( 'woocommerce_billing_fields', 'custom_woocommerce_billing_fields' );
@@ -89,6 +90,7 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 	  $updated_settings = array();
 
 	  foreach ( $settings as $section ) {
+
 	    // at the bottom of the General Options section
 	    if ( isset( $section['id'] ) && 'general_options' == $section['id'] &&
 	       isset( $section['type'] ) && 'sectionend' == $section['type'] ) {
@@ -100,12 +102,41 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 	        'type'     => 'text',
 	        'desc'     => __( 'Ensure that the api key is correct and save this setting before choose your base city. <br> If you don\'t have any, <a href="'. esc_url('http://rajaongkir.com/akun/daftar') .'">register here</a>. ' ),
 	      );
-	    }
+	    }	    
 
 	    $updated_settings[] = $section;
 	  }
 
 	  return $updated_settings;
+	}
+
+	function add_api_minimum_weight($settings)
+	{
+		// echo '<pre>';
+		// var_dump($settings);
+		// echo '</pre>';
+		$updated_settings = array();
+
+		foreach ($settings as $section) {
+			if ( isset( $section['id'] ) && 
+				'product_measurement_options' == $section['id'] &&
+				isset( $section['type'] ) && 
+				'sectionend' == $section['type'] ) {
+
+				$updated_settings[] = array(
+			        'name'     => __( 'Minimum Weight', 'wc_seq_order_numbers' ),
+			        'id'       => 'woocommerce_myongkir_minimum_weight',
+			        'css'	   => 'width: 100px;',
+			        'type'     => 'text',
+			        'desc'     => __( 'Default cart weight if cart doesn\'t meet, based on weight unit.' ),
+			        'default'  => 1
+			      );
+			}
+
+			 $updated_settings[] = $section;
+		}
+
+		return $updated_settings;
 	}
 
 	// reorder form field
