@@ -25,6 +25,12 @@
   <li>Now, your products can be shipped by various indonesian couriers!</li>
 </ol>
 
+<h2>Todo</h2>
+<ol>
+  <li>Order's minimum weight</li>
+  <li>Weight validation on add product, don't save product if weight is empty</li>
+</ol>
+
 <h2>Note</h2>
 <p>Please put weight for every product. It will affect the shipping cost.</p>
 <p>Contact me if you found some bugs. Thanks.</p>
