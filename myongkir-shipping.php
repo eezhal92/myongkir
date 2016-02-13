@@ -30,39 +30,40 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 	 */
 	function init() {
 		// Load the settings API
-		$this->init_form_fields(); // This is part of the settings API. Override the method to add your own settings
-		$this->init_settings(); // This is part of the settings API. Loads settings you previously init.
-
-		$this->title = "MyOngkir Shipping Method"; // This can be added as an setting but for this example its forced.
-		$this->enabled = $this->settings['enabled']; // if api key not setted, enabled = false
+		// This is part of the settings API. Override the method to add your own settings
+		$this->init_form_fields(); 
+		
+		// This is part of the settings API. Loads settings you previously init.
+		$this->init_settings(); 
+		
+		// This can be added as an setting but for this example its forced.
+		$this->title = "MyOngkir Shipping Method"; 
+		// if api key not setted, enabled = false
+		
+		$this->enabled = $this->settings['enabled']; 
 		$this->api_key = $this->settings['api_key'];
-
 		$this->base_city = $this->settings['base_city'];
 
 		global $woocommerce;
 		global $myongkir;
-		// Save settings in admin if you have any defined
-		add_action( 'woocommerce_update_options_shipping_' . $this->id, array( $this, 'process_admin_options' ) );
+		
 		// handle frontend cost request
 		add_action( 'wp_ajax_get_costs', 'calculate_shipping' );
-		add_action( 'woocommerce_review_order_after_shipping', function() {
-			echo '<tr class="order-total">
-				<th>Weight Total</th>
-				<td><strong><span class="amount">'.  WC()->cart->cart_contents_weight . ' ' . get_option('woocommerce_weight_unit') .'</span></strong></td>
-			  </tr>';		
-		});
+		// Save settings in admin if you have any defined
+		
+		add_action( 'woocommerce_update_options_shipping_' . $this->id, array( $this, 'process_admin_options' ) );
+		
+		add_action( 'woocommerce_review_order_before_shipping', array( $this, 'generate_cart_weight_row'));
+
+		
 	}
 
-	function isset_rajaongkir_api() {
-		$rajaongkir_api = get_option('woocommerce_rajaongkir_api_key');
 
-		if( $rajaongkir_api == '' || $rajaongkir_api == null) {
-			return false;
-		}
-
-		return true;
-	}
-
+	/**
+	 * Generate html settings form
+	 *
+	 * @return void
+	 */
 	function admin_options() {
 	?>
 		<h2><?php _e('MyOngkir Shipping','woocommerce'); ?></h2>
@@ -80,19 +81,24 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 
 			?>
 		</table> <?php
-	}
+	}	
 
+	/**
+	 * Form for shipping method settings in admin
+	 *
+	 * @return void
+	 */
 	function init_form_fields() {
 		global $woocommerce;
 		global $myongkir;
-		// $province_id = $myongkir->convert_to_province_id( $woocommerce->countries->get_base_state() );
+		
 		if ( $this->isset_rajaongkir_api() ) {
 		    $this->form_fields = array(
 		    	'enabled' => array(
 				    'title' => 'Enable/Disable',
-				    'type' => 'checkbox', // pilih salah satu
+				    'type' => 'checkbox',
 				    'default' => 'no',
-				    'label' => 'Enable this shipping method' // checkbox only
+				    'label' => 'Enable this shipping method',
 
 					),
 				'base_city' => array(
@@ -103,7 +109,7 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 			         'description' => __( 'This is your store location, used for origin package. Require api key is setted, before showing available city.', 'woocommerce' ),
 			         'options' => $myongkir->get_cities( $woocommerce->countries->get_base_state() )
 			    	),
-					'courier' => array(
+				'courier' => array(
 				         'title' => __( 'Your couriers', 'woocommerce' ),
 				         'type' => 'select',
 				         'id' => 'woocommerce_myongkir_couriers', // generate woocommerce_myongkir_base_city
@@ -116,7 +122,20 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 	}	
 
 	/**
-	 * calculate_shipping function.
+	 * Add cart weight total before shipping in chekout form
+	 *
+	 * @return void
+	 */
+	public function generate_cart_weight_row()
+	{		
+		echo '<tr class="order-total">
+			    <th>Weight Total</th>
+				<td><strong><span class="amount">'.  $this->getCartWeight() . ' ' . get_option('woocommerce_weight_unit')  .'</span></strong></td>
+			  </tr>';			
+	}
+
+	/**
+	 * Calculate shipping cost in checkout form.
 	 *
 	 * @access public
 	 * @param mixed $package
@@ -127,25 +146,7 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 		global $myongkir;
 
 		$current_shipping_city = $woocommerce->customer->get_shipping_city();		
-		$current_cart_weight = $woocommerce->cart->cart_contents_weight;
-
-		$minimum_weight = get_option('woocommerce_myongkir_minimum_weight');
-
-		// not setted yet,woocommerce_myongkir_minimum_weight
-		if (! $minimum_weight) {
-			$minimum_weight = 1;
-		}
-
-		if ($current_cart_weight < $minimum_weight) {
-			$current_cart_weight = $minimum_weight;
-		}
-
-		$weight_unit = get_option('woocommerce_weight_unit');			
-		// convert to gram
-		$current_cart_weight = CartWeight::toGram($current_cart_weight, $weight_unit);
-
-		// $current_currency = get_woocommerce_currency();
-
+		$current_cart_weight = $this->getCartWeight(true); // in gram		
 		$courier = $this->settings['courier'];
 
 		// echo '<pre>';
@@ -202,6 +203,53 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 			}
 		}
 
+	}
+
+	/**
+	 * Determin whether Raja Ongkir key is set or not
+	 *
+	 * @return bool
+	 */
+	private function isset_rajaongkir_api() {
+		$rajaongkir_api = get_option('woocommerce_rajaongkir_api_key');
+
+		if( $rajaongkir_api == '' || $rajaongkir_api == null) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Get current cart weight.
+	 *
+	 * @return int
+	 */
+	private function getCartWeight($toGram = false)
+	{
+		global $woocommerce;
+
+		$current_cart_weight = $woocommerce->cart->cart_contents_weight;
+		$minimum_weight = get_option('woocommerce_myongkir_minimum_weight');
+
+		// not setted yet,woocommerce_myongkir_minimum_weight
+		if (! $minimum_weight) {
+			$minimum_weight = 1;
+		}
+
+		if ($current_cart_weight < $minimum_weight) {
+			$current_cart_weight = $minimum_weight;
+		}
+
+		
+		// if flag is true, convert to gram and return it
+		if ($toGram) {
+			$weight_unit = get_option('woocommerce_weight_unit');			
+
+			return CartWeight::toGram($current_cart_weight, $weight_unit);
+		}
+
+		return $current_cart_weight;
 	}
 
 	private function get_available_shippings( $shipping_city, $cart_weight, $courier ) {

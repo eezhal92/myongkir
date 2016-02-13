@@ -43,6 +43,34 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 	add_action( 'wp_ajax_get_cities', 'get_cities_cb' );
 	add_action( 'wp_ajax_nopriv_get_cities', 'get_cities_cb' );
 
+	add_action( 'save_post', function ($post_id) {
+		// // validation, if weight is empty, redirect and cancel publish
+		// // $prevent_publish = false;
+		
+		// if(empty($_REQUEST['_weight'])) {
+		// 	add_action( 'admin_notices', 'weight_notice' );			
+		// } 
+	});
+
+	add_action( 'woocommerce_after_add_to_cart_button', 'addtocart_button_func' );
+	/*
+	 * Content below "Add to cart" Button.
+	 */
+	function addtocart_button_func() {
+
+	        // Echo content.
+	        echo '<div class="second_content">Other content here!</div>';
+
+	}
+
+	function weight_notice() {
+	    ?>
+	    <div class="updated">
+	        <p><?php _e( 'Weight is empty!', 'my-text-domain' ); ?></p>
+	    </div>
+	    <?php
+	}
+
 	function check_base_country() {
 		global $woocommerce;
 

@@ -55,6 +55,7 @@ class MyOngkir_Shipping {
 	* @return array
 	*/
 	public function get_costs( $from, $to, $weight, $courier = 'jne') {
+		// echo 'weight ' . $weight;
 		$result = self::$request->post('/cost', array(
 			'key' => $this->api_key,
 			'origin' => $from,
@@ -105,7 +106,7 @@ class MyOngkir_Shipping {
 	}
 
 	/**
-	* get_cities function.
+	* Get list of city based on default country setting.
 	*
 	* @access public
 	* @param integer $woocommerce_default_country
