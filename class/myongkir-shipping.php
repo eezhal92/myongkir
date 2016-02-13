@@ -14,24 +14,30 @@ require_once 'request.php';
 require_once 'helper-functions.php';
 
 class MyOngkir_Shipping {
+	
 	const SERVER = 'http://api.rajaongkir.com/starter';
+	
 	private $api_key = '';
+	
 	private static $request = null;
+	
 	protected static $instance;
 
 	public function __construct() {
-		// $this->api_key = $api_key;
-
 		if( self::$request === null ) {
 			self::$request = new Request(array(
 	 			'server' => self::SERVER
 	 		));
-	 		self::$request->api_key($api_key, 'key');
 		}
 
 		return self::$request;
 	}
 
+	/**
+	 * Get instance of this class.
+	 *		 
+	 * @return MyOngkir_Shipping
+	 */
 	public static function get_instance() {
 		if(!static::$instance) {
 			static ::$instance = new self;
@@ -40,32 +46,34 @@ class MyOngkir_Shipping {
 		return static::$instance;
 	}
 
-
+	/**
+	 * Set rajaongkir api key for request.
+	 *	
+	 * @param string $api_key
+	 * @return void
+	 */
 	public function set_api_key($api_key) {
 		$this->api_key = $api_key;
 	}
 
 	/**
-	* get_cities function.
-	*
-	* @access public
-	* @param integer $from
-	* @param integer $to
-	* @param float $weight
-	* @return array
-	*/
+	 * Get shipping costs.
+	 *
+	 * @access public
+	 * @param integer $from
+	 * @param integer $to
+	 * @param float $weight
+	 * @return array
+	 */
 	public function get_costs( $from, $to, $weight, $courier = 'jne') {
-		// echo 'weight ' . $weight;
 		$result = self::$request->post('/cost', array(
-			'key' => $this->api_key,
-			'origin' => $from,
-			'destination' => $to, // on going
-			'weight' => $weight,
-      		'courier' => $courier
+			'key'         => $this->api_key,
+			'origin'      => $from,
+			'destination' => $to,
+			'weight'      => $weight,
+      		'courier'     => $courier
 		));
-
-		// self::$request->debug();
-
+		
 		try {
 			$costs = object_to_array( $result->rajaongkir->results );
 
@@ -78,15 +86,13 @@ class MyOngkir_Shipping {
 	}
 
 	/**
-	* convert_currency function. convert from
-	*
-	* @access public
-	* @param string $woocommerce_currency, integer $amount
-	* @return integer
-	*/
-
-	public function convert_currency($woocommerce_currency, $amount = 1) {
-		if(is_null($woocommerce_currency) || $woocommerce_currency == '') {
+	 * Currency to IDR converter.
+	 *	 
+	 * @param string $woocommerce_currency, integer $amount
+	 * @return integer
+	 */
+	public function convert_currency( $woocommerce_currency, $amount = 1 ) {
+		if ( is_null($woocommerce_currency) || $woocommerce_currency == '' ) {
 			try {
 				$req = new Request(array(
 					'server' => 'http://www.getexchangerates.com/api/convert/'
@@ -106,12 +112,12 @@ class MyOngkir_Shipping {
 	}
 
 	/**
-	* Get list of city based on default country setting.
-	*
-	* @access public
-	* @param integer $woocommerce_default_country
-	* @return array
-	*/
+	 * Get list of city based on default country setting.
+	 *
+	 * @access public
+	 * @param integer $woocommerce_default_country
+	 * @return array
+	 */
 	public function get_cities( $woocommerce_default_country ) {
 		// NOTE: check if province id have prefix ID:xx for the first install
 		$result = self::$request->get('/city', array(
@@ -140,12 +146,19 @@ class MyOngkir_Shipping {
 		}
 	}
 
+	/**
+	 * Get city detail based on province
+	 *
+	 * @param int $rajaongkir_city_id
+	 * @param int $rajaongkir_province_id
+	 * @return string
+	 */
 	public function get_city( $rajaongkir_city_id, $rajaongkir_province_id ) {
 		// NOTE: check if province id have prefix ID:xx for the first install
 		$result = self::$request->get('/city', array(
-			'key' => $this->api_key,
+			'key'      => $this->api_key,
 			'province' => $rajaongkir_province_id,
-			'id' => $rajaongkir_city_id
+			'id'       => $rajaongkir_city_id
 		));
 
 		try {
@@ -162,12 +175,10 @@ class MyOngkir_Shipping {
 	}
 
 	/**
-	* get_provinces function.
-	*
-	* @access public
-	* @param array
-	* @return array
-	*/
+	 * Get province lists.
+	 *	 
+	 * @return array
+	 */
 	public function get_provinces() {
 		// NOTE: check if province id have prefix ID:xx for the first install
 		$result = self::$request->get('/province', array(
@@ -181,9 +192,7 @@ class MyOngkir_Shipping {
 
 			foreach ($provinces as $province) {
 				$simple_provice[$province['province_id']] = $province['province'];
-			}
-
-			// print_r( $simple_provice );
+			}			
 
 			return $simple_provice;
 
@@ -195,8 +204,7 @@ class MyOngkir_Shipping {
 
 	/**
 	 * Convert woocommerce base_state to rajaongkir province_id
-	 *
-	 * @access public
+	 *	 
 	 * @param  string $woocommerce_default_country
 	 * @return integer
 	 */

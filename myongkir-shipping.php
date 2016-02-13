@@ -28,7 +28,7 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 	 * @access public
 	 * @return void
 	 */
-	function init() {
+	public function init() {
 		// Load the settings API
 		// This is part of the settings API. Override the method to add your own settings
 		$this->init_form_fields(); 
@@ -49,8 +49,8 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 		
 		// handle frontend cost request
 		add_action( 'wp_ajax_get_costs', 'calculate_shipping' );
-		// Save settings in admin if you have any defined
 		
+		// Save settings in admin if you have any defined		
 		add_action( 'woocommerce_update_options_shipping_' . $this->id, array( $this, 'process_admin_options' ) );
 		
 		add_action( 'woocommerce_review_order_before_shipping', array( $this, 'generate_cart_weight_row'));
@@ -64,23 +64,23 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 	 *
 	 * @return void
 	 */
-	function admin_options() {
+	public function admin_options() {
 	?>
-		<h2><?php _e('MyOngkir Shipping','woocommerce'); ?></h2>
+		<h2><?php _e('MyOngkir Shipping', 'woocommerce'); ?></h2>
 		<table class="form-table">
 			<?php
 				$rajaongkir_api = get_option('woocommerce_rajaongkir_api_key');
 
-				if( !$this->isset_rajaongkir_api() ) {
+				if ( !$this->isset_rajaongkir_api() ) {
 			?>
 				<div id="message" class="error fade"><p><strong>Please Set RajaOngkir API Key first, on woocommerce general settings.</strong></p></div>
 			<?php
 				} else {
 					 $this->generate_settings_html();
 				}
-
 			?>
-		</table> <?php
+		</table>
+	<?php
 	}	
 
 	/**
@@ -88,35 +88,40 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 	 *
 	 * @return void
 	 */
-	function init_form_fields() {
+	public function init_form_fields() {
 		global $woocommerce;
 		global $myongkir;
 		
 		if ( $this->isset_rajaongkir_api() ) {
 		    $this->form_fields = array(
 		    	'enabled' => array(
-				    'title' => 'Enable/Disable',
-				    'type' => 'checkbox',
+				    'title'   => 'Enable/Disable',
+				    'type'    => 'checkbox',
 				    'default' => 'no',
-				    'label' => 'Enable this shipping method',
+				    'label'   => 'Enable this shipping method',
 
 					),
 				'base_city' => array(
-			         'title' => __( 'Your Base City', 'woocommerce' ),
-			         'type' => 'select',
-			         'id' => 'woocommerce_myongkir_base_city', // generate woocommerce_myongkir_base_city
-			         'class' => 'chosen_select',
-			         'description' => __( 'This is your store location, used for origin package. Require api key is setted, before showing available city.', 'woocommerce' ),
-			         'options' => $myongkir->get_cities( $woocommerce->countries->get_base_state() )
+			        'title'       => __( 'Your Base City', 'woocommerce' ),
+			        'type'        => 'select',
+			        'id'          => 'woocommerce_myongkir_base_city',
+			        'class'       => 'chosen_select',
+			        'description' => __( 'This is your store location, used for origin package. Require api key is setted, before showing available city.', 'woocommerce' ),
+			        'options'     => $myongkir->get_cities( $woocommerce->countries->get_base_state() )
 			    	),
 				'courier' => array(
-				         'title' => __( 'Your couriers', 'woocommerce' ),
-				         'type' => 'select',
-				         'id' => 'woocommerce_myongkir_couriers', // generate woocommerce_myongkir_base_city
-				         'class' => 'chosen_select',
-				         'description' => __( 'This is the avaibility of yours couriers', 'woocommerce' ),
-				         'options' => array('all'=>'All','jne'=>'JNE', 'pos'=>'POS','tiki'=>'Tiki')
-				    	)
+				    'title'       => __( 'Your couriers', 'woocommerce' ),
+				    'type'        => 'select',
+				    'id'          => 'woocommerce_myongkir_couriers',
+				    'class'       => 'chosen_select',
+				    'description' => __( 'This is the avaibility of yours couriers', 'woocommerce' ),
+				    'options' => array(
+				    	'all' => 'All',
+				    	'jne' => 'JNE',
+				    	'pos' => 'POS',
+				    	'tiki'=>'Tiki',
+				    ),
+				),
 		    );
 		}
 	}	
@@ -128,10 +133,12 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 	 */
 	public function generate_cart_weight_row()
 	{		
-		echo '<tr class="order-total">
-			    <th>Weight Total</th>
-				<td><strong><span class="amount">'.  $this->getCartWeight() . ' ' . get_option('woocommerce_weight_unit')  .'</span></strong></td>
-			  </tr>';			
+		echo '<tr class="order-total">';
+		echo   '<th>Weight Total</th>';
+		echo     '<td><strong><span class="amount">';  
+		echo		$this->get_cart_weight() . ' ' . get_option( 'woocommerce_weight_unit' );  
+		echo     '</span></strong></td>';
+		echo '</tr>';			
 	}
 
 	/**
@@ -146,21 +153,11 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 		global $myongkir;
 
 		$current_shipping_city = $woocommerce->customer->get_shipping_city();		
-		$current_cart_weight = $this->getCartWeight(true); // in gram		
+		$current_cart_weight = $this->get_cart_weight(true); // in gram		
 		$courier = $this->settings['courier'];
-
-		// echo '<pre>';
-		// var_dump(array(
-		// 	'minimum_weight'      => $minimum_weight,
-		// 	'current_cart_weight' => $current_cart_weight,
-		// 	'weight_unit'         => $weight_unit,
-		// 	'shipping_city'       => $current_shipping_city,
-		// ));
-		// echo '</pre>';
-		
 		$shipping_couriers = array(); // results		
 
-		switch ($courier) {
+		switch ( $courier ) {
 			case 'jne':				
 			case 'tiki':				
 			case 'pos':
@@ -174,7 +171,7 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 			default:
 				$couriers = ['jne', 'tiki', 'pos'];				
 
-				foreach ($couriers as $courier) {
+				foreach ( $couriers as $courier ) {
 					$result = $this->get_available_shippings(
 						$current_shipping_city, 
 						$current_cart_weight, $courier
@@ -186,8 +183,8 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 				break;
 		}		
 		
-		if( $shipping_couriers ) {
-			foreach( $shipping_couriers as $courier ) {
+		if ( $shipping_couriers ) {
+			foreach ( $shipping_couriers as $courier ) {
 				foreach ( $courier['costs'] as $item ) {
 					foreach ( $item['cost'] as $cost ) {
 						$this->add_rate(
@@ -206,7 +203,7 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 	}
 
 	/**
-	 * Determin whether Raja Ongkir key is set or not
+	 * Determine whether Raja Ongkir key is set or not.
 	 *
 	 * @return bool
 	 */
@@ -223,16 +220,17 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 	/**
 	 * Get current cart weight.
 	 *
+	 * @param bool $to_gram
 	 * @return int
 	 */
-	private function getCartWeight($toGram = false)
+	private function get_cart_weight($to_gram = false)
 	{
 		global $woocommerce;
 
 		$current_cart_weight = $woocommerce->cart->cart_contents_weight;
 		$minimum_weight = get_option('woocommerce_myongkir_minimum_weight');
 
-		// not setted yet,woocommerce_myongkir_minimum_weight
+		// if woocommerce_myongkir_minimum_weight value not set
 		if (! $minimum_weight) {
 			$minimum_weight = 1;
 		}
@@ -240,10 +238,9 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 		if ($current_cart_weight < $minimum_weight) {
 			$current_cart_weight = $minimum_weight;
 		}
-
 		
 		// if flag is true, convert to gram and return it
-		if ($toGram) {
+		if ($to_gram) {
 			$weight_unit = get_option('woocommerce_weight_unit');			
 
 			return CartWeight::toGram($current_cart_weight, $weight_unit);
@@ -252,8 +249,16 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 		return $current_cart_weight;
 	}
 
+	/**
+	 * Get available shippings based on store city and customer city
+	 *
+	 * @param int $shipping_city
+	 * @param int $cart_weight
+	 * @param string $courier
+	 * @return array
+	 */
 	private function get_available_shippings( $shipping_city, $cart_weight, $courier ) {
-		if( $origin_city = $this->settings['base_city'] ) {
+		if ( $origin_city = $this->settings['base_city'] ) {
 			global $myongkir;				
 
 			return $myongkir->get_costs(
@@ -263,6 +268,7 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 				$courier 
 			);
 		}
+
 		echo $this->settings['base_city'];
 		// break shipping calculation if origin city not (base_city) set
 		echo "DEBUG: Break shipping calculation if origin city not (base_city) set <br>";
@@ -270,6 +276,5 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 
 	}
 }
-
 
 ?>

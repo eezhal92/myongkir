@@ -31,7 +31,7 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 	add_action( 'woocommerce_shipping_init', 'myongkir_shipping_method_init' );
 	add_filter( 'woocommerce_shipping_methods', 'add_myongkir_shipping_method' );
 	add_filter( 'woocommerce_general_settings', 'add_api_key_setting' );
-	add_filter( 'woocommerce_products_general_settings', 'add_api_minimum_weight' );
+	add_filter( 'woocommerce_products_general_settings', 'add_minimum_weight_setting' );
 
 	add_filter( 'woocommerce_checkout_fields', 'woocommerce_myongkir_checkout_fields' );
 	add_filter( 'woocommerce_billing_fields', 'custom_woocommerce_billing_fields' );
@@ -43,32 +43,12 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 	add_action( 'wp_ajax_get_cities', 'get_cities_cb' );
 	add_action( 'wp_ajax_nopriv_get_cities', 'get_cities_cb' );
 
-	add_action( 'save_post', function ($post_id) {
-		// // validation, if weight is empty, redirect and cancel publish
-		// // $prevent_publish = false;
-		
-		// if(empty($_REQUEST['_weight'])) {
-		// 	add_action( 'admin_notices', 'weight_notice' );			
-		// } 
-	});
-
-	add_action( 'woocommerce_after_add_to_cart_button', 'addtocart_button_func' );
-	/*
-	 * Content below "Add to cart" Button.
-	 */
-	function addtocart_button_func() {
-
-	        // Echo content.
-	        echo '<div class="second_content">Other content here!</div>';
-
-	}
-
 	function weight_notice() {
-	    ?>
+	?>
 	    <div class="updated">
 	        <p><?php _e( 'Weight is empty!', 'my-text-domain' ); ?></p>
 	    </div>
-	    <?php
+	<?php
 	}
 
 	function check_base_country() {
@@ -76,7 +56,7 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 
 		if ( $woocommerce->countries->get_base_country() !== 'ID' ) {
     		$exit_msg = 'Plugin MyOngkir Shipping only based location must be Indonesia.';
-    		exit($exit_msg);
+    		exit( $exit_msg );
 		}
 	}
 
@@ -85,19 +65,19 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 
 		if( $current_currency != 'IDR' ) {
 			$exit_msg = 'Plugin MyOngkir Shipping must use IDR currency.';
-			exit($exit_msg);
+			exit( $exit_msg );
 		}
 	}
 
 	function global_myongkir_init() {
-		require_once(plugin_dir_path( __FILE__ ) . 'class/myongkir-shipping.php');
+		require_once( plugin_dir_path( __FILE__ ) . 'class/myongkir-shipping.php' );
 
 		// define nonce constans
 		define("MYONGKIR_NONCE", "myongkir-nonce");
 
 		$myongkir_shipping = MyOngkir_Shipping::get_instance();
 
-		$rajaongkir_api_key = get_option('woocommerce_rajaongkir_api_key');
+		$rajaongkir_api_key = get_option( 'woocommerce_rajaongkir_api_key' );
 		$myongkir_shipping->set_api_key( $rajaongkir_api_key );
 
 		$GLOBALS['myongkir'] = $myongkir_shipping;
@@ -138,14 +118,11 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 	  return $updated_settings;
 	}
 
-	function add_api_minimum_weight($settings)
+	function add_minimum_weight_setting( $settings )
 	{
-		// echo '<pre>';
-		// var_dump($settings);
-		// echo '</pre>';
 		$updated_settings = array();
 
-		foreach ($settings as $section) {
+		foreach ( $settings as $section ) {
 			if ( isset( $section['id'] ) && 
 				'product_measurement_options' == $section['id'] &&
 				isset( $section['type'] ) && 
@@ -169,15 +146,14 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 
 	// reorder form field
 	function woocommerce_myongkir_checkout_fields( $fields ) {
-		$allowed_fields = array('billing', 'shipping');
+		$allowed_fields = array( 'billing', 'shipping' );
 
 		// delete billing and shipping city fields
 		unset($fields['billing']['billing_city']);
 		unset($fields['shipping']['shipping_city']);
 
-		foreach( $fields as $type => $field )
-		{
-			if( in_array($type, $allowed_fields) )
+		foreach ( $fields as $type => $field ) {
+			if ( in_array( $type, $allowed_fields ) )
 			{
 				// set billing address css class
 				$fields[$type][$type.'_address_1']['class'] = array('form-row-wide');
@@ -190,22 +166,21 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 				$postcode_field['clear'] = true;
 
 				// offset value of state field
-				$offset_state = array_search($type.'_state', array_keys($fields[$type]));
+				$offset_state = array_search( $type.'_state', array_keys( $fields[$type] ) );
 				$offset_after_state  = $offset_state + 1;
 
 				$fields[$type] =
 					// country, first name | last name, company, address1, address2, state(provinsi) |
-					array_slice($fields[$type], 0, $offset_after_state, true) +
+					array_slice( $fields[$type], 0, $offset_after_state, true ) +
 					// postcode / zip, city
-					array($type.'_postcode' => $postcode_field) + array($type.'_city' => create_city_field($type) ) +
+					array( $type.'_postcode' => $postcode_field ) + array( $type.'_city' => create_city_field( $type ) ) +
 					// email | phone
-					array_slice($fields[$type], $offset_after_state, null, true);
+					array_slice( $fields[$type], $offset_after_state, null, true );
 			}
 		}		
 
 		return $fields;
 	}
-
 
 	function custom_woocommerce_billing_fields( $fields ) {
 		$fields['billing_city']	= create_city_field('billing');
@@ -266,7 +241,7 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 		{
 			$user_id = $current_user->data->ID;
 			$meta_key = ( $type == 'billing' ) ? 'billing_city' :  'shipping_city' ;
-			$index_city =  get_user_meta($user_id, $meta_key, true);
+			$index_city =  get_user_meta( $user_id, $meta_key, true );
 			array_push($field['class'], $meta_key . '_' . $index_city);
 		}
 
@@ -287,16 +262,16 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 		global $post;
 
 		if ( $post->post_content == '[woocommerce_my_account]' || $post->post_content == '[woocommerce_checkout]' ) {
-			if( is_user_logged_in() ) {
+			if ( is_user_logged_in() ) {
 				global $current_user;
 
 				$user_id = $current_user->data->ID;
-				$_SESSION['billing_city'] = get_user_meta($user_id, 'billing_city', true);
-				$_SESSION['shipping_city'] = get_user_meta($user_id, 'shipping_city', true);
+				$_SESSION['billing_city'] = get_user_meta( $user_id, 'billing_city', true );
+				$_SESSION['shipping_city'] = get_user_meta( $user_id, 'shipping_city', true );
 			}
 
-			$is_permitted_pages =
-				( $post->post_content == '[woocommerce_my_account]' || $post->post_content == '[woocommerce_checkout]' );
+			$is_permitted_pages = ( $post->post_content == '[woocommerce_my_account]' || 
+								    $post->post_content == '[woocommerce_checkout]' );
 
 			$settings = array(
 				'ajax_url'  		 => admin_url( 'admin-ajax.php' ),
@@ -317,10 +292,10 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 		$nonce = $_GET['nonce'];
 
 		// if don't have nonce, set error
-		if ( !wp_verify_nonce($nonce, constant('MYONGKIR_NONCE')) ) die($nonce);
+		if ( !wp_verify_nonce( $nonce, constant('MYONGKIR_NONCE' ) ) ) die( $nonce );
 
-		if( get_option('woocommerce_rajaongkir_api_key') == null || get_option('woocommerce_rajaongkir_api_key') == '' ) {
-		    echo json_encode( array('Please set RajaOngkir API Key First') );
+		if( get_option( 'woocommerce_rajaongkir_api_key' ) == null || get_option( 'woocommerce_rajaongkir_api_key' ) == '' ) {
+		    echo json_encode( array(' Please set RajaOngkir API Key First' ) );
 
 			die();
 		} else {
@@ -333,6 +308,5 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 			die(); // this is required to return a proper result
 		}
 	}
-
 
 }
