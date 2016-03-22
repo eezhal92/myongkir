@@ -184,7 +184,8 @@ class MyOngkir_Shipping {
 		$result = self::$request->get('/province', array(
 			'key' => $this->api_key,
 		));
-
+		if(empty($to))
+			return;
 		try {
 			$provinces = object_to_array( $result->rajaongkir->results );
 
