@@ -40,9 +40,9 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 		$this->title = "MyOngkir Shipping Method"; 
 		// if api key not setted, enabled = false
 		
-		$this->enabled = $this->settings['enabled']; 
-		$this->api_key = $this->settings['api_key'];
-		$this->base_city = $this->settings['base_city'];
+		$this->enabled = !isset($this->settings['enabled'])? true : $this->settings['enabled'] ; 
+		$this->api_key = !isset($this->settings['api_key'])? null : $this->settings['api_key'] ;
+		$this->base_city = !isset($this->settings['base_city'])? null : $this->settings['base_city'];
 
 		global $woocommerce;
 		global $myongkir;
