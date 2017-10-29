@@ -183,7 +183,7 @@ class MyOngkir_Shipping_Method extends WC_Shipping_Method {
 				break;
 		}		
 		
-		if ( $shipping_couriers ) {
+		if ( ! empty($shipping_couriers) ) {
 			foreach ( $shipping_couriers as $courier ) {
 				foreach ( $courier['costs'] as $item ) {
 					foreach ( $item['cost'] as $cost ) {
