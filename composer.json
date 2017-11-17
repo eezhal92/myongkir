@@ -1,0 +1,12 @@
+{
+    "name": "eezhal92/myongkir",
+    "description": "WooCommerce add-on for indonesian local shipping.",
+    "type": "library",
+    "authors": [
+        {
+            "name": "eezhal92",
+            "email": "arkinthesky.69@gmail.com"
+        }
+    ],
+    "require": {}
+}

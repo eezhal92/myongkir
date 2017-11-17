@@ -10,16 +10,16 @@
  * @author          Philip Sturgeon
  * @license         http://philsturgeon.co.uk/code/dbad-license
  * @link            http://github.com/philsturgeon/codeigniter-restclient
- * 
+ *
  */
 
- 
-if ( ! defined( 'ABSPATH' ) ) { 
-    exit; 
+
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
 }
 
 class Curl {
-	private $response;          // Contains the cURL response for debug
+    private $response;          // Contains the cURL response for debug
 
     private $session;           // Contains the cURL handler for a session
     private $url;               // URL of the session
@@ -33,23 +33,23 @@ class Curl {
     function __construct($url = '')
     {
         if ( ! $this->is_enabled())
-		{
-			echo 'cURL not enabled.';
-		}
+        {
+            echo 'cURL not enabled.';
+        }
 
-		$url AND $this->create($url);
+        $url AND $this->create($url);
     }
 
 
     function __call($method, $arguments)
     {
-    	if (in_array($method, array('simple_get', 'simple_post', 'simple_put', 'simple_delete')))
-    	{
-    		// Take off the "simple_" and past get/post/put/delete to _simple_call
-    		$verb = str_replace('simple_', '', $method);
-    		array_unshift($arguments, $verb);
-    		return call_user_func_array(array($this, '_simple_call'), $arguments);
-    	}
+        if (in_array($method, array('simple_get', 'simple_post', 'simple_put', 'simple_delete')))
+        {
+            // Take off the "simple_" and past get/post/put/delete to _simple_call
+            $verb = str_replace('simple_', '', $method);
+            array_unshift($arguments, $verb);
+            return call_user_func_array(array($this, '_simple_call'), $arguments);
+        }
     }
 
     /* =================================================================================
@@ -63,7 +63,7 @@ class Curl {
         // If a URL is provided, create new session
         $this->create($url);
 
-		$this->{$method}($params, $options);
+        $this->{$method}($params, $options);
 
         // Add in the specific options provided
         $this->options($options);
@@ -75,7 +75,7 @@ class Curl {
     {
         // If there is no ftp:// or any protocol entered, add ftp://
         if ( ! preg_match('!^(ftp|sftp)://! i', $url))
-		{
+        {
             $url = 'ftp://'.$url;
         }
 
@@ -86,7 +86,7 @@ class Curl {
 
             if ($password != '')
             {
-            	$auth_string .= ':'.$password;
+                $auth_string .= ':'.$password;
             }
 
             // Add the user auth string after the protocol
@@ -108,10 +108,10 @@ class Curl {
      * ================================================================================= */
 
     public function post($params = array(), $options = array())
-	{
+    {
         // If its an array (instead of a query string) then format it correctly
         if (is_array($params))
-		{
+        {
             $params = http_build_query($params, NULL, '&');
         }
 
@@ -171,18 +171,18 @@ class Curl {
 
     public function http_header($header, $content = NULL)
     {
-		$this->headers[] = $content ? $header.': '.$content : $header;
+        $this->headers[] = $content ? $header.': '.$content : $header;
     }
 
     public function http_method($method)
     {
-    	$this->options[CURLOPT_CUSTOMREQUEST] = strtoupper($method);
+        $this->options[CURLOPT_CUSTOMREQUEST] = strtoupper($method);
         return $this;
     }
 
     public function http_login($username = '', $password = '', $type = 'any')
     {
-		$this->option(CURLOPT_HTTPAUTH, constant('CURLAUTH_'.strtoupper($type) ));
+        $this->option(CURLOPT_HTTPAUTH, constant('CURLAUTH_'.strtoupper($type) ));
         $this->option(CURLOPT_USERPWD, $username.':'.$password);
         return $this;
     }
@@ -231,12 +231,12 @@ class Curl {
 
     public function option($code, $value)
     {
-    	if (is_string($code) && !is_numeric($code))
-    	{
-    		$code = constant('CURLOPT_' . strtoupper($code));
-    	}
+        if (is_string($code) && !is_numeric($code))
+        {
+            $code = constant('CURLOPT_' . strtoupper($code));
+        }
 
-    	$this->options[$code] = $value;
+        $this->options[$code] = $value;
         return $this;
     }
 
@@ -267,20 +267,20 @@ class Curl {
         if (!isset($this->options[CURLOPT_RETURNTRANSFER]))    $this->options[CURLOPT_RETURNTRANSFER] = TRUE;
         if (!isset($this->options[CURLOPT_FAILONERROR]))       $this->options[CURLOPT_FAILONERROR] = TRUE;
 
-		// Only set follow location if not running securely
-		if ( ! ini_get('safe_mode') && ! ini_get('open_basedir'))
-		{
-			// Ok, follow location is not set already so lets set it to true
-			if (!isset($this->options[CURLOPT_FOLLOWLOCATION]))
-			{
-				$this->options[CURLOPT_FOLLOWLOCATION] = TRUE;
-			}
+        // Only set follow location if not running securely
+        if ( ! ini_get('safe_mode') && ! ini_get('open_basedir'))
+        {
+            // Ok, follow location is not set already so lets set it to true
+            if (!isset($this->options[CURLOPT_FOLLOWLOCATION]))
+            {
+                $this->options[CURLOPT_FOLLOWLOCATION] = TRUE;
+            }
         }
 
-		if ( ! empty($this->headers))
-		{
-			$this->option(CURLOPT_HTTPHEADER, $this->headers);
-		}
+        if ( ! empty($this->headers))
+        {
+            $this->option(CURLOPT_HTTPHEADER, $this->headers);
+        }
 
         $this->options();
 
@@ -311,7 +311,7 @@ class Curl {
 
     public function is_enabled()
     {
-		return function_exists('curl_init');
+        return function_exists('curl_init');
     }
 
     public function debug()
@@ -324,10 +324,10 @@ class Curl {
 
         if ($this->error_string)
         {
-    	    echo "=============================================<br/>\n";
-    	    echo "<h3>Errors</h3>";
-    	    echo "<strong>Code:</strong> ".$this->error_code."<br/>\n";
-    	    echo "<strong>Message:</strong> ".$this->error_string."<br/>\n";
+            echo "=============================================<br/>\n";
+            echo "<h3>Errors</h3>";
+            echo "<strong>Code:</strong> ".$this->error_code."<br/>\n";
+            echo "<strong>Message:</strong> ".$this->error_string."<br/>\n";
         }
 
         echo "=============================================<br/>\n";
@@ -335,15 +335,15 @@ class Curl {
         echo "<pre>";
         print_r($this->info);
         echo "</pre>";
-	}
+    }
 
-	public function debug_request()
-	{
-		return array(
-			'url' => $this->url,
+    public function debug_request()
+    {
+        return array(
+            'url' => $this->url,
             'params' => $this->options
-		);
-	}
+        );
+    }
 
     private function set_defaults()
     {
